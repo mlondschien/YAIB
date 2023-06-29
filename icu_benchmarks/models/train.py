@@ -166,6 +166,13 @@ def train_common(
         else DataLoader([test_dataset.to_tensor()], batch_size=1)
     )
 
+    for (name, dataset) in [("train", train_dataset), ("val", val_dataset), ("test", test_dataset)]:
+        X, y = dataset.get_data_and_labels()
+        X = pd.DataFrame(X, columns=dataset.get_feature_names())
+        X.to_parquet(log_dir / f"X_{name}.parquet")
+        y = pd.DataFrame(y, columns=["outcome"])
+        y.to_parquet(log_dir / f"y_{name}.parquet")
+
     model.set_weight("balanced", train_dataset)
     test_loss = trainer.test(model, dataloaders=test_loader, verbose=verbose)[0]["test/loss"]
     save_config_file(log_dir)
